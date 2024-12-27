@@ -7,34 +7,20 @@ if not stream.isOpened():
     print("Open CV is unable to open the camera")
     exit()
 
-frameB = np.zeros((480, 640, 3)[:2], np.uint8)
-
+ret, ima = stream.read()
+ret, imb = stream.read()
+ret, dst = stream.read()
 
 while True:
-    ret, frameA = stream.read()
-    if not ret:
-        print("Stream has ended")
-        break
+    retval, inframe = stream.read()
+    ima[:] = imb
+    imb[:] = inframe
+    dst[:] = 128 + imb//2 - ima//2
+    cv.imshow("out",dst)
 
-    #print(frameA.shape)
-        
-    
-    blurA = cv.GaussianBlur(frameA, (5,5), cv.BORDER_DEFAULT)
-    blurB = cv.GaussianBlur(frameB, (5,5), cv.BORDER_DEFAULT)
-
-    #invert color
-    invertB = cv.cvtColor(blurB, cv.COLOR_RGB2BGR)
-
-    movement = cv.bitwise_or(blurA, invertB)
-
-
-    cv.imshow("Motion", movement)
-
-
-    ret,frameB = stream.read()
-    
     if cv.waitKey(1) == ord('q'):
         break
+
 
 stream.release()
 cv.destroyAllWindows()
